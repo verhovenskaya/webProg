@@ -3,6 +3,27 @@ const router = express.Router();
 const Event = require('../model/event'); 
 const User = require('../model/user'); 
 
+
+/**
+ * @swagger
+ * tags:
+ *   name: Events
+ *   description: Управление мероприятиями
+ */
+
+/**
+ * @swagger
+ * /api/events:
+ *   get:
+ *     tags: [Events]
+ *     summary: Получить все мероприятия
+ *     responses:
+ *       200:
+ *         description: Успешный запрос
+ *       500:
+ *         description: Ошибка сервера
+ */
+
 // Получение всех мероприятий
 router.get('/events', async (req, res) => {
     try {
@@ -15,6 +36,27 @@ router.get('/events', async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
+
+/**
+ * @swagger
+ * /api/events/{id}:
+ *   get:
+ *     tags: [Events]
+ *     summary: Получить мероприятие по ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Успешный запрос
+ *       404:
+ *         description: Мероприятие не найдено
+ *       500:
+ *         description: Ошибка сервера
+ */
 
 // Получение одного мероприятия по ID
 router.get('/events/:id', async (req, res) => {
@@ -33,6 +75,43 @@ router.get('/events/:id', async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
+
+/**
+ * @swagger
+ * /api/events:
+ *   post:
+ *     tags: [Events]
+ *     summary: Создать мероприятие
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - date
+ *               - createdby
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               date:
+ *                 type: string
+ *                 format: date-time
+ *               location:
+ *                 type: string
+ *               createdby:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Мероприятие создано
+ *       400:
+ *         description: Неверные данные
+ *       500:
+ *         description: Ошибка сервера
+ */
 
 // Создание мероприятия
 router.post('/events', async (req, res) => {
@@ -55,6 +134,47 @@ router.post('/events', async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
+
+/**
+ * @swagger
+ * /api/events/{id}:
+ *   put:
+ *     tags: [Events]
+ *     summary: Обновить мероприятие
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               date:
+ *                 type: string
+ *                 format: date-time
+ *               location:
+ *                 type: string
+ *               createdby:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Мероприятие обновлено
+ *       400:
+ *         description: Неверные данные
+ *       404:
+ *         description: Мероприятие не найдено
+ *       500:
+ *         description: Ошибка сервера
+ */
 
 // Обновление мероприятия
 router.put('/events/:id', async (req, res) => {
@@ -83,6 +203,27 @@ router.put('/events/:id', async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
+
+/**
+ * @swagger
+ * /api/events/{id}:
+ *   delete:
+ *     tags: [Events]
+ *     summary: Удалить мероприятие
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       204:
+ *         description: Мероприятие удалено
+ *       404:
+ *         description: Мероприятие не найдено
+ *       500:
+ *         description: Ошибка сервера
+ */
 
 // Удаление мероприятия
 router.delete('/events/:id', async (req, res) => {

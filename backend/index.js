@@ -1,17 +1,25 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const { sequelize, authenticateDB } = require('./config/db'); // Импорт sequelize и authenticateDB
+const morgan = require('morgan'); 
+const { sequelize, authenticateDB } = require('./config/db'); 
+
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocs = require('./swagger'); 
 
 const eventRoutes = require('./routes/eventRoutes'); 
-const Event = require('./model/event'); 
-const User = require('./model/user'); 
 const userRoutes = require('./routes/userRoutes'); 
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8080; 
+
+// Логируем только запросы, начинающиеся с /api
+app.use('/api', morgan(':method :url :status :res[content-length] - :response-time ms'));
+
+// Настройка Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use(express.json());
 app.use(cors());
