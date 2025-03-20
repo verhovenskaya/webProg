@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Event = require('../model/event'); 
 const User = require('../model/user'); 
+const checkEventLimit = require('../middleware/eventLimit'); 
 
 
 /**
@@ -109,12 +110,34 @@ router.get('/events/:id', async (req, res) => {
  *         description: Мероприятие создано
  *       400:
  *         description: Неверные данные
+ *       429:
+ *         description: Превышен лимит создания мероприятий
  *       500:
  *         description: Ошибка сервера
  */
 
 // Создание мероприятия
-router.post('/events', async (req, res) => {
+/*router.post('/events', async (req, res) => {
+    try {
+        const { title, description, date, location, createdby } = req.body;
+
+        if (!title || !date || !createdby) {
+            return res.status(400).json({ message: 'Необходимо указать название, дату и создателя мероприятия' });
+        }
+
+        // Проверка, что location не пустая строка
+        if (typeof location !== 'string' || location.trim() === '') {
+            return res.status(400).json({ message: 'Поле Локация не может быть пустым' });
+        }
+
+        const event = await Event.create({ title, description, date, location, createdby });
+        res.status(201).json(event);
+    } catch (err) {
+        console.error("Ошибка при создании события:", err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});*/
+router.post('/events', checkEventLimit, async (req, res) => {
     try {
         const { title, description, date, location, createdby } = req.body;
 
