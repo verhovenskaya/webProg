@@ -31,8 +31,10 @@ const Event = sequelize.define('Event', {
         type: DataTypes.DATE, 
         allowNull: false,
     },
-
-
+    location: { // Новое поле
+        type: DataTypes.STRING(255),
+        allowNull: false,
+    },
     createdby: {
         type: DataTypes.INTEGER,
         allowNull: false,

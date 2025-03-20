@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Event = require('../model/event'); // Импортируйте модель Event правильно!
-const User = require('../model/user'); // Импортируйте модель User
+const Event = require('../model/event'); 
+const User = require('../model/user'); 
 
 // Получение всех мероприятий
 router.get('/events', async (req, res) => {
@@ -37,13 +37,18 @@ router.get('/events/:id', async (req, res) => {
 // Создание мероприятия
 router.post('/events', async (req, res) => {
     try {
-        const { title, description, date, createdby } = req.body;
+        const { title, description, date, location, createdby } = req.body;
 
         if (!title || !date || !createdby) {
             return res.status(400).json({ message: 'Необходимо указать название, дату и создателя мероприятия' });
         }
 
-        const event = await Event.create({ title, description, date, createdby });
+        // Проверка, что location не пустая строка
+        if (typeof location !== 'string' || location.trim() === '') {
+            return res.status(400).json({ message: 'Поле Локация не может быть пустым' });
+        }
+
+        const event = await Event.create({ title, description, date, location, createdby });
         res.status(201).json(event);
     } catch (err) {
         console.error("Ошибка при создании события:", err);
@@ -55,7 +60,7 @@ router.post('/events', async (req, res) => {
 router.put('/events/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, date, createdby } = req.body;
+        const { title, description, date, location, createdby } = req.body;
 
         // Поиск мероприятия
         const event = await Event.findByPk(id);
@@ -67,6 +72,7 @@ router.put('/events/:id', async (req, res) => {
         if (title) event.title = title;
         if (description) event.description = description;
         if (date) event.date = date;
+        if (location) event.location = location; // Обновление локации
         if (createdby) event.createdby = createdby;
 
         // Сохранение изменений
