@@ -1,0 +1,10 @@
+node_modules/
+.vscode/
+/build/
+/dist/
+*.log
+*.env
+tmp/
+temp/
+Thumbs.db
+ehthumbs.db
