@@ -77,44 +77,7 @@ router.get('/events/:id', async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /api/events:
- *   post:
- *     tags: [Events]
- *     summary: Создать мероприятие
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - title
- *               - date
- *               - createdby
- *             properties:
- *               title:
- *                 type: string
- *               description:
- *                 type: string
- *               date:
- *                 type: string
- *                 format: date-time
- *               location:
- *                 type: string
- *               createdby:
- *                 type: integer
- *     responses:
- *       201:
- *         description: Мероприятие создано
- *       400:
- *         description: Неверные данные
- *       429:
- *         description: Превышен лимит создания мероприятий
- *       500:
- *         description: Ошибка сервера
- */
+
 
 // Создание мероприятия
 /*router.post('/events', async (req, res) => {
@@ -137,7 +100,7 @@ router.get('/events/:id', async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 });*/
-router.post('/events', checkEventLimit, async (req, res) => {
+/*router.post('/events', checkEventLimit, async (req, res) => {
     try {
         const { title, description, date, location, createdby } = req.body;
 
@@ -156,7 +119,7 @@ router.post('/events', checkEventLimit, async (req, res) => {
         console.error("Ошибка при создании события:", err);
         res.status(500).json({ message: 'Ошибка сервера' });
     }
-});
+});*/
 
 /**
  * @swagger

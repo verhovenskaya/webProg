@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const morgan = require('morgan'); 
 const passport = require('passport');
+require('./config/passport'); // Добавьте эту строку ПЕРЕД маршрутами
 const { sequelize, authenticateDB } = require('./config/db'); 
 
 const swaggerUi = require('swagger-ui-express');
@@ -11,6 +12,7 @@ const swaggerDocs = require('./swagger');
 const eventRoutes = require('./routes/eventRoutes'); 
 const userRoutes = require('./routes/userRoutes'); 
 const authRoutes = require('./routes/auth');
+const protectedRoutes = require('./routes/protectedRoutes');
 
 dotenv.config();
 
@@ -31,6 +33,7 @@ app.use(passport.initialize());
 app.use('/api', eventRoutes);
 app.use('/api', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api', protectedRoutes); // Защищённые маршруты
 
 app.get('/', (req, res) => {
   res.json({ message: 'Сервер работает!' });

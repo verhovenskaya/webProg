@@ -6,12 +6,9 @@ dotenv.config();
 
 const checkEventLimit = async (req, res, next) => {
   console.log('Middleware checkEventLimit вызван'); 
-  const { createdby } = req.body;
-
-  if (!createdby) {
-      console.log('Не указан createdby'); 
-      return res.status(400).json({ message: 'Необходимо указать создателя мероприятия' });
-  }
+  
+  // Берем ID пользователя из объекта req.user, а не из тела запроса
+  const createdby = req.user.id;
 
   const eventLimit = parseInt(process.env.EVENT_LIMIT_PER_DAY, 10);
   console.log('Лимит событий:', eventLimit); 

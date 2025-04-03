@@ -6,22 +6,23 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const options = {
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.JWT_SECRET 
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET
 };
 
 passport.use(
-    new JwtStrategy(options, async (payload, done) => {
-        try {
-            const user = await User.findByPk(payload.id);
-            if (!user) {
-                return done(null, false);
-            }
-            return done(null, user); 
-        } catch (error) {
-            return done(error, false);
-        }
-    })
+  new JwtStrategy(options, async (payload, done) => {
+    try {
+      const user = await User.findByPk(payload.id);
+      if (!user) {
+        return done(null, false);
+      }
+      return done(null, user);
+    } catch (error) {
+      return done(error, false);
+    }
+  })
 );
 
-module.exports = passport; 
+// Не забываем экспортировать
+module.exports = passport;
