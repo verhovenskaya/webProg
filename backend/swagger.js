@@ -12,11 +12,20 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost:8080`, // Убедитесь, что порт совпадает с вашим сервером
+        url: `http://localhost:8080`, 
       },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      }
+    },
   },
-  apis: ['./backend/routes/*.js'], // Указываем путь к файлам с роутами
+  apis: ['./backend/routes/*.js'], 
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
