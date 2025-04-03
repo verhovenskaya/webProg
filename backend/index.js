@@ -3,7 +3,8 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const morgan = require('morgan'); 
 const passport = require('passport');
-require('./config/passport'); // Добавьте эту строку ПЕРЕД маршрутами
+const checkBlacklistedToken = require('./middleware/checkBlackListToken');
+require('./config/passport'); 
 const { sequelize, authenticateDB } = require('./config/db'); 
 
 const swaggerUi = require('swagger-ui-express');
@@ -27,6 +28,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use(express.json());
 app.use(cors());
+app.use(checkBlacklistedToken);
 app.use(passport.initialize());
 
 // Подключение маршрутов

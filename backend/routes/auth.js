@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const BlacklistedToken = require('../model/blackListToken');
 const User = require("../model/user");
 const dotenv = require("dotenv");
 
@@ -163,5 +164,61 @@ router.post("/login", async (req, res) => {
     }
     console.log('Input password:', `"${password}"`, 'Length:', password.length);
 });
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Выход из системы
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Успешный выход
+ *       401:
+ *         description: Не авторизован
+ *       500:
+ *         description: Ошибка сервера
+ */
+router.post('/logout', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        return res.status(401).json({ message: 'Токен отсутствует' });
+      }
+  
+      const token = authHeader.split(' ')[1];
+      if (!token) {
+        return res.status(401).json({ message: 'Неверный формат токена' });
+      }
+  
+      // Декодируем токен для получения expiresAt
+      const decoded = jwt.decode(token);
+      if (!decoded || !decoded.exp) {
+        return res.status(400).json({ message: 'Невалидный токен' });
+      }
+  
+      // Преобразуем Unix timestamp в Date
+      const expiresAt = new Date(decoded.exp * 1000);
+  
+      // Добавляем токен в черный список
+      await BlacklistedToken.create({
+        token,
+        expires_at: expiresAt
+      });
+  
+      res.json({ message: 'Успешный выход из системы' });
+    } catch (err) {
+      console.error('Ошибка при выходе:', err);
+      
+      // Обработка ошибки дубликата токена
+      if (err.name === 'SequelizeUniqueConstraintError') {
+        return res.status(200).json({ message: 'Токен уже недействителен' });
+      }
+      
+      res.status(500).json({ message: 'Ошибка сервера при выходе' });
+    }
+  });
 
 module.exports = router;
