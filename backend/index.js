@@ -2,6 +2,9 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const morgan = require('morgan'); 
+const passport = require('passport');
+const checkBlacklistedToken = require('./middleware/checkBlackListToken');
+require('./config/passport'); 
 const { sequelize, authenticateDB } = require('./config/db'); 
 
 const swaggerUi = require('swagger-ui-express');
@@ -9,6 +12,8 @@ const swaggerDocs = require('./swagger');
 
 const eventRoutes = require('./routes/eventRoutes'); 
 const userRoutes = require('./routes/userRoutes'); 
+const authRoutes = require('./routes/auth');
+const protectedRoutes = require('./routes/protectedRoutes');
 
 dotenv.config();
 
@@ -23,10 +28,14 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use(express.json());
 app.use(cors());
+app.use(checkBlacklistedToken);
+app.use(passport.initialize());
 
 // Подключение маршрутов
 app.use('/api', eventRoutes);
 app.use('/api', userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api', protectedRoutes); // Защищённые маршруты
 
 app.get('/', (req, res) => {
   res.json({ message: 'Сервер работает!' });
@@ -35,14 +44,13 @@ app.get('/', (req, res) => {
 sequelize.sync({ force: false }) // force: false - чтобы не пересоздавать таблицы каждый раз
   .then(() => {
     console.log('База данных синхронизирована.');
-    // Запуск сервера после успешной синхронизации
     app.listen(PORT, () => {
       console.log(`Сервер запущен на порту ${PORT}`);
     }).on('error', (err) => {
       // Обработка ошибок
       if (err.code === 'EADDRINUSE') {
         console.error(`Порт ${PORT} уже занят.`);
-        process.exit(1); // Завершение процесса с кодом ошибки
+        process.exit(1); 
       } else {
         console.error('Ошибка при запуске сервера:', err);
         process.exit(1);
@@ -52,4 +60,5 @@ sequelize.sync({ force: false }) // force: false - чтобы не пересо�
   .catch((err) => {
     console.error('Ошибка при синхронизации базы данных:', err);
   });
+
 
