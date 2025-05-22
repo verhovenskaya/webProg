@@ -112,7 +112,7 @@ router.get('/events/:id', async (req, res) => {
  *       500:
  *         description: Ошибка сервера
  */
-router.put('/events/:id', async (req, res) => {
+router.put('/events/:id', async (req, res): Promise <any> => {
     try {
         const { id } = req.params;
         const { title, description, date, location, createdby } = req.body;
@@ -156,7 +156,7 @@ router.put('/events/:id', async (req, res) => {
  *       500:
  *         description: Ошибка сервера
  */
-router.delete('/events/:id', async (req, res) => {
+router.delete('/events/:id', async (req, res) : Promise <any>=> {
     try {
         const { id } = req.params;
         const event = await Event.findByPk(id);

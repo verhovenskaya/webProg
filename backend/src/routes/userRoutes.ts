@@ -21,11 +21,11 @@ import User from '../model/user';
  *       500:
  *         description: Ошибка сервера
  */
-router.get('/users', async (req, res) => {
+router.get('/users', async (req, res) : Promise <any>=> {
   try {
     const users = await User.findAll();
     res.json(users);
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 });
@@ -58,7 +58,7 @@ router.get('/users/:id', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Пользователь не найден' });
     }
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 });
@@ -90,7 +90,7 @@ router.post('/users', async (req, res) => {
   try {
     const user = await User.create(req.body);
     res.status(201).json(user);
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 });
@@ -135,7 +135,7 @@ router.put('/users/:id', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Пользователь не найден' });
     }
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 });
@@ -160,7 +160,7 @@ router.put('/users/:id', async (req, res) => {
  *       500:
  *         description: Ошибка сервера
  */
-router.delete('/users/:id', async (req, res) => {
+router.delete('/users/:id', async (req, res) : Promise <any> => {
   try {
     const user = await User.findByPk(req.params.id);
     if (user) {
@@ -169,7 +169,7 @@ router.delete('/users/:id', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Пользователь не найден' });
     }
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 });

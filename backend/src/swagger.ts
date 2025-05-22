@@ -11,7 +11,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost:8080`, 
+        url: `http://localhost:8080`,
       },
     ],
     components: {
@@ -19,12 +19,12 @@ const swaggerOptions = {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT'
-        }
-      }
+          bearerFormat: 'JWT',
+        },
+      },
     },
   },
-  apis: ['./backend/routes/*.ts'], 
+  apis: ['./src/routes/*.ts'],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);

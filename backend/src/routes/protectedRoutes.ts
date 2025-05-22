@@ -3,6 +3,7 @@ const router = express.Router();
 import passport from "passport";
 import Event from "../model/event";
 import checkEventLimit from "../middleware/eventLimit";
+import { Request, Response, NextFunction } from 'express';
 
 /**
  * @swagger
@@ -44,7 +45,7 @@ import checkEventLimit from "../middleware/eventLimit";
 router.post("/events", 
   passport.authenticate("jwt", { session: false }),
   checkEventLimit,
-  async (req, res) => {
+  async (req, res) : Promise <any> => {
     try {
       const { title, description, date, location } = req.body;
       
@@ -57,7 +58,7 @@ router.post("/events",
         description, 
         date, 
         location,
-        createdby: req.user.id
+        createdby: req.user!.id
       });
       
       res.status(201).json(event);

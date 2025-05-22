@@ -3,47 +3,59 @@ import passport from 'passport';
 import User from '../model/user';
 import BlacklistedToken from '../model/blackListToken';
 import * as dotenv from 'dotenv';
+import { Request } from 'express';
 
 dotenv.config();
+
+declare global {
+  namespace Express {
+    interface User extends InstanceType<typeof User> {}
+  }
+}
+
+interface JwtPayload {
+  id: number;
+  [key: string]: any;
+}
+
+
 
 const options = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
   secretOrKey: process.env.JWT_SECRET!,
-  passReqToCallback: true // Добавляем возможность использовать req в колбэке
+  passReqToCallback: true as const,
 };
 
-// Регистрируем стратегию правильно
-const strategy = new JwtStrategy(options, async (req, payload, done) => {
+passport.use(new JwtStrategy(options, async (req: Request, payload: JwtPayload, done) => {
   try {
-    // 1. Проверяем черный список токенов
     const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+    if (!token) {
+      return done(null, false, { message: 'Токен отсутствует' });
+    }
+
     const isBlacklisted = await BlacklistedToken.findOne({ where: { token } });
-    
     if (isBlacklisted) {
       return done(null, false, { message: 'Токен недействителен' });
     }
 
-    // 2. Ищем пользователя
     const user = await User.findByPk(payload.id);
-    
     if (!user) {
       return done(null, false, { message: 'Пользователь не найден' });
     }
 
-    // 3. Возвращаем пользователя
     return done(null, user);
   } catch (error) {
     return done(error, false);
   }
-});
+}));
 
-passport.use(strategy);
-
-// Сериализация/десериализация пользователя (обязательно!)
-passport.serializeUser((user: any, done) => {
+// Правильная типизация для serializeUser
+passport.serializeUser((user: User, done) => {
   done(null, user.id);
 });
 
+
+// Правильная типизация для deserializeUser
 passport.deserializeUser(async (id: number, done) => {
   try {
     const user = await User.findByPk(id);
