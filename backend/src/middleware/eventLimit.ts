@@ -1,15 +1,24 @@
+import { Request, Response, NextFunction } from 'express';
 import Event from '../model/event';
 import * as dotenv from 'dotenv';
-import { Sequelize, Op } from 'sequelize';
+import { Op } from 'sequelize';
 
 dotenv.config();
 
-const checkEventLimit = async (req: any, res: any, next: any) => {
+const checkEventLimit = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   console.log('Middleware checkEventLimit вызван');
 
-  // Берем ID пользователя из объекта req.user
-  const createdby = req.user.id;
+  // Get user ID from req.user
+  if (!req.user?.id) {
+    res.status(401).json({ message: 'Пользователь не аутентифицирован' });
+    return;
+  }
 
+  const createdby = req.user.id;
   const eventLimit = parseInt(process.env.EVENT_LIMIT_PER_DAY!, 10);
   console.log('Лимит событий:', eventLimit);
 
@@ -28,9 +37,10 @@ const checkEventLimit = async (req: any, res: any, next: any) => {
 
     if (eventCount >= eventLimit) {
       console.log('Лимит превышен');
-      return res
+      res
         .status(429)
         .json({ message: 'Превышен лимит создания мероприятий за день' });
+      return;
     }
 
     next();

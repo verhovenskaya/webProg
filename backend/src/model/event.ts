@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, ModelStatic, Model } from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
 import dbConfig from '../config/db';
 import User from './user';
 

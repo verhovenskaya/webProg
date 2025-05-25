@@ -1,6 +1,6 @@
 import BlacklistedToken from '../model/blackListToken';
 import cron from 'node-cron';
-import { Sequelize, Op } from 'sequelize';
+import { Op } from 'sequelize';
 
 export default () => {
   // Очищаем просроченные токены каждый день в 3:00

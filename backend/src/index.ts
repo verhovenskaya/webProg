@@ -5,7 +5,7 @@ import morgan from 'morgan';
 import passport from 'passport';
 import checkBlacklistedToken from './middleware/checkBlackListToken';
 import './config/passport';
-import { sequelize, authenticateDB } from '../src/config/db';
+import { sequelize } from '../src/config/db';
 
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocs from './swagger';

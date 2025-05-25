@@ -1,20 +1,29 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { Request, Response, NextFunction } from 'express';
 
-export default (req: any, res: any, next: any) => {
-  // Получаем токен из заголовка
+export default (req: Request, res: Response, next: NextFunction): void => {
+  // Get token from header
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = authHeader?.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ error: 'Access denied. No token provided.' });
+    res.status(401).json({ error: 'Access denied. No token provided.' });
+    return;
   }
 
   try {
-    // Верифицируем токен
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-    req.user = decoded;
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+
+    // Attach user to request
+    req.user = {
+      id: decoded.id,
+      ...(decoded.email && { email: decoded.email }),
+      ...(decoded.name && { name: decoded.name }),
+    };
+
     next();
-  } catch (error) {
+  } catch {
     res.status(400).json({ error: 'Invalid token' });
   }
 };

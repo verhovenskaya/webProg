@@ -15,10 +15,8 @@ declare global {
 
 interface JwtPayload {
   id: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
-
-
 
 const options = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -26,34 +24,37 @@ const options = {
   passReqToCallback: true as const,
 };
 
-passport.use(new JwtStrategy(options, async (req: Request, payload: JwtPayload, done) => {
-  try {
-    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-    if (!token) {
-      return done(null, false, { message: 'Токен отсутствует' });
-    }
+passport.use(
+  new JwtStrategy(options, async (req: Request, payload: JwtPayload, done) => {
+    try {
+      const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+      if (!token) {
+        return done(null, false, { message: 'Токен отсутствует' });
+      }
 
-    const isBlacklisted = await BlacklistedToken.findOne({ where: { token } });
-    if (isBlacklisted) {
-      return done(null, false, { message: 'Токен недействителен' });
-    }
+      const isBlacklisted = await BlacklistedToken.findOne({
+        where: { token },
+      });
+      if (isBlacklisted) {
+        return done(null, false, { message: 'Токен недействителен' });
+      }
 
-    const user = await User.findByPk(payload.id);
-    if (!user) {
-      return done(null, false, { message: 'Пользователь не найден' });
-    }
+      const user = await User.findByPk(payload.id);
+      if (!user) {
+        return done(null, false, { message: 'Пользователь не найден' });
+      }
 
-    return done(null, user);
-  } catch (error) {
-    return done(error, false);
-  }
-}));
+      return done(null, user);
+    } catch (error) {
+      return done(error, false);
+    }
+  }),
+);
 
 // Правильная типизация для serializeUser
 passport.serializeUser((user: User, done) => {
   done(null, user.id);
 });
-
 
 // Правильная типизация для deserializeUser
 passport.deserializeUser(async (id: number, done) => {

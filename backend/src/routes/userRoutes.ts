@@ -1,6 +1,7 @@
 import express from 'express';
 const router = express.Router();
 import User from '../model/user';
+import { Request, Response } from 'express';
 
 /**
  * @swagger
@@ -21,12 +22,15 @@ import User from '../model/user';
  *       500:
  *         description: Ошибка сервера
  */
-router.get('/users', async (req, res) : Promise <any>=> {
+router.get('/users', async (req: Request, res: Response): Promise<void> => {
   try {
     const users = await User.findAll();
     res.json(users);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    }
+    res.status(500).json({ message: 'An unknown error occurred' });
   }
 });
 
@@ -50,7 +54,7 @@ router.get('/users', async (req, res) : Promise <any>=> {
  *       500:
  *         description: Ошибка сервера
  */
-router.get('/users/:id', async (req, res) => {
+router.get('/users/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await User.findByPk(req.params.id);
     if (user) {
@@ -58,8 +62,11 @@ router.get('/users/:id', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Пользователь не найден' });
     }
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    }
+    res.status(500).json({ message: 'An unknown error occurred' });
   }
 });
 
@@ -86,12 +93,15 @@ router.get('/users/:id', async (req, res) => {
  *       500:
  *         description: Ошибка сервера
  */
-router.post('/users', async (req, res) => {
+router.post('/users', async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await User.create(req.body);
     res.status(201).json(user);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    }
+    res.status(500).json({ message: 'An unknown error occurred' });
   }
 });
 
@@ -126,7 +136,7 @@ router.post('/users', async (req, res) => {
  *       500:
  *         description: Ошибка сервера
  */
-router.put('/users/:id', async (req, res) => {
+router.put('/users/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await User.findByPk(req.params.id);
     if (user) {
@@ -135,8 +145,11 @@ router.put('/users/:id', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Пользователь не найден' });
     }
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    }
+    res.status(500).json({ message: 'An unknown error occurred' });
   }
 });
 
@@ -160,18 +173,25 @@ router.put('/users/:id', async (req, res) => {
  *       500:
  *         description: Ошибка сервера
  */
-router.delete('/users/:id', async (req, res) : Promise <any> => {
-  try {
-    const user = await User.findByPk(req.params.id);
-    if (user) {
-      await user.destroy();
-      res.status(204).send();
-    } else {
-      res.status(404).json({ message: 'Пользователь не найден' });
+
+router.delete(
+  '/users/:id',
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const user = await User.findByPk(req.params.id);
+      if (user) {
+        await user.destroy();
+        res.status(204).send();
+      } else {
+        res.status(404).json({ message: 'Пользователь не найден' });
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        res.status(500).json({ message: error.message });
+      }
+      res.status(500).json({ message: 'An unknown error occurred' });
     }
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-});
+  },
+);
 
 export default router;

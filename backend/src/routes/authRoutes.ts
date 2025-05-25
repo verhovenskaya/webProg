@@ -39,8 +39,12 @@ interface AuthResponse {
 }
 
 // Типы для запросов и ответов
-type RegisterRequest = Request<{}, {}, RegisterRequestBody>;
-type LoginRequest = Request<{}, {}, LoginRequestBody>;
+type RegisterRequest = Request<
+  Record<string, never>,
+  unknown,
+  RegisterRequestBody
+>;
+type LoginRequest = Request<Record<string, never>, unknown, LoginRequestBody>;
 type AuthResponseType = Response<AuthResponse>;
 
 /**
@@ -74,40 +78,43 @@ type AuthResponseType = Response<AuthResponse>;
  *       400:
  *         description: Ошибка валидации
  */
-router.post('/register', async (req: RegisterRequest, res: AuthResponseType): Promise<any> => {
-  const { email, name, password } = req.body;
+router.post(
+  '/register',
+  async (req: RegisterRequest, res: AuthResponseType): Promise<void> => {
+    const { email, name, password } = req.body;
 
-  if (!email || !name || !password) {
-    return res.status(400).json({ message: "Все поля обязательны" });
-  }
-
-  try {
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ message: "Email уже используется" });
+    if (!email || !name || !password) {
+      res.status(400).json({ message: 'Все поля обязательны' });
+      return;
     }
 
-    const user = await User.create({ email, name, password });
-    const token = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET!,
-      { expiresIn: "1h" }
-    );
-
-    return res.status(201).json({
-      message: "Регистрация успешна",
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name
+    try {
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        res.status(400).json({ message: 'Email уже используется' });
+        return;
       }
-    });
-  } catch (error) {
-    console.error("Ошибка регистрации:", error);
-    return res.status(500).json({ message: "Ошибка сервера" });
-  }
-});
+
+      const user = await User.create({ email, name, password });
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
+        expiresIn: '1h',
+      });
+
+      res.status(201).json({
+        message: 'Регистрация успешна',
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
+      });
+    } catch (error) {
+      console.error('Ошибка регистрации:', error);
+      res.status(500).json({ message: 'Ошибка сервера' });
+    }
+  },
+);
 
 /**
  * @swagger
@@ -137,43 +144,47 @@ router.post('/register', async (req: RegisterRequest, res: AuthResponseType): Pr
  *       401:
  *         description: Неверные учетные данные
  */
-router.post('/login', async (req: LoginRequest, res: AuthResponseType): Promise<any> => {
-  const { email, password } = req.body;
+router.post(
+  '/login',
+  async (req: LoginRequest, res: AuthResponseType): Promise<void> => {
+    const { email, password } = req.body;
 
-  try {
-    const user = await User.findOne({
-      where: { email },
-      attributes: ['id', 'email', 'name', 'password']
-    }) as unknown as IUser;
+    try {
+      const user = await User.findOne({
+        where: { email },
+        attributes: ['id', 'email', 'name', 'password'],
+      });
 
-    if (!user) {
-      return res.status(401).json({ message: "Неверные учетные данные" });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Неверные учетные данные" });
-    }
-
-    const token = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET!,
-      { expiresIn: "1h" }
-    );
-
-    return res.json({
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name
+      if (!user) {
+        res.status(401).json({ message: 'Неверные учетные данные' });
+        return;
       }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    return res.status(500).json({ message: "Ошибка сервера" });
-  }
-});
+
+      const userData = user.get() as IUser;
+      const isMatch = await bcrypt.compare(password, userData.password);
+      if (!isMatch) {
+        res.status(401).json({ message: 'Неверные учетные данные' });
+        return;
+      }
+
+      const token = jwt.sign({ id: userData.id }, process.env.JWT_SECRET!, {
+        expiresIn: '1h',
+      });
+
+      res.json({
+        token,
+        user: {
+          id: userData.id,
+          email: userData.email,
+          name: userData.name,
+        },
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Ошибка сервера' });
+    }
+  },
+);
 
 /**
  * @swagger
@@ -191,40 +202,51 @@ router.post('/login', async (req: LoginRequest, res: AuthResponseType): Promise<
  *       500:
  *         description: Ошибка сервера
  */
-router.post('/logout', async (req: Request, res: Response<{ message: string }>): Promise<any> => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ message: 'Токен отсутствует' });
+router.post(
+  '/logout',
+  async (req: Request, res: Response<{ message: string }>): Promise<void> => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        res.status(401).json({ message: 'Токен отсутствует' });
+        return;
+      }
+
+      const token = authHeader.split(' ')[1];
+      if (!token) {
+        res.status(401).json({ message: 'Неверный формат токена' });
+        return;
+      }
+
+      const decoded = jwt.decode(token) as JwtPayload;
+      if (!decoded || !decoded.exp) {
+        res.status(400).json({ message: 'Невалидный токен' });
+        return;
+      }
+
+      const expiresAt = new Date(decoded.exp * 1000);
+
+      await BlacklistedToken.create({
+        token,
+        expires_at: expiresAt,
+      });
+
+      res.json({ message: 'Успешный выход из системы' });
+    } catch (err: unknown) {
+      console.error('Ошибка при выходе:', err);
+
+      if (
+        err instanceof Error &&
+        'name' in err &&
+        err.name === 'SequelizeUniqueConstraintError'
+      ) {
+        res.status(200).json({ message: 'Токен уже недействителен' });
+        return;
+      }
+
+      res.status(500).json({ message: 'Ошибка сервера при выходе' });
     }
-
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ message: 'Неверный формат токена' });
-    }
-
-    const decoded = jwt.decode(token) as JwtPayload;
-    if (!decoded || !decoded.exp) {
-      return res.status(400).json({ message: 'Невалидный токен' });
-    }
-
-    const expiresAt = new Date(decoded.exp * 1000);
-
-    await BlacklistedToken.create({
-      token,
-      expires_at: expiresAt
-    });
-
-    return res.json({ message: 'Успешный выход из системы' });
-  } catch (err: any) {
-    console.error('Ошибка при выходе:', err);
-    
-    if (err.name === 'SequelizeUniqueConstraintError') {
-      return res.status(200).json({ message: 'Токен уже недействителен' });
-    }
-    
-    return res.status(500).json({ message: 'Ошибка сервера при выходе' });
-  }
-});
+  },
+);
 
 export default router;

@@ -17,7 +17,8 @@
       "@models/*": ["./model/*"],
       "@routes/*": ["./routes/*"],
       "@controllers/*": ["./controllers/*"],
-      "@swaggers/*": ["./swaggers/*"]
+      "@swaggers/*": ["./swaggers/*"],
+      "@middleware/*": ["middleware/*.ts"]
     }
   },
   "include": ["src/**/*"],

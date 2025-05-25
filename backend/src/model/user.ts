@@ -10,7 +10,13 @@ interface UserAttributes {
   createdat?: Date;
 }
 
-interface UserCreationAttributes extends Omit<UserAttributes, 'id'> {}
+// Instead of extending Omit, explicitly define the creation attributes
+interface UserCreationAttributes {
+  name: string;
+  email: string;
+  password: string;
+  createdat?: Date;
+}
 
 class User
   extends Model<UserAttributes, UserCreationAttributes>
@@ -27,6 +33,7 @@ class User
   }
 }
 
+// Rest of your User.init configuration remains the same...
 User.init(
   {
     id: {

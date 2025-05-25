@@ -1,8 +1,8 @@
 import express from 'express';
 const router = express.Router();
-import Event from '../model/event'; 
-import User from '../model/user'; 
-import checkEventLimit from '../middleware/eventLimit'; 
+import Event from '../model/event';
+import User from '../model/user';
+import { Request, Response } from 'express';
 
 /**
  * @swagger
@@ -24,15 +24,15 @@ import checkEventLimit from '../middleware/eventLimit';
  *         description: Ошибка сервера
  */
 router.get('/events', async (req, res) => {
-    try {
-        const events = await Event.findAll({
-            include: [{ model: User, as: 'creator', attributes: ['name', 'email'] }], 
-        });
-        res.json(events);
-    } catch (err) {
-        console.error("Ошибка при получении событий:", err);
-        res.status(500).json({ message: 'Ошибка сервера' });
-    }
+  try {
+    const events = await Event.findAll({
+      include: [{ model: User, as: 'creator', attributes: ['name', 'email'] }],
+    });
+    res.json(events);
+  } catch (err) {
+    console.error('Ошибка при получении событий:', err);
+    res.status(500).json({ message: 'Ошибка сервера' });
+  }
 });
 
 /**
@@ -56,20 +56,20 @@ router.get('/events', async (req, res) => {
  *         description: Ошибка сервера
  */
 router.get('/events/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const event = await Event.findByPk(id, {
-            include: [{ model: User, as: 'creator', attributes: ['name', 'email'] }],
-        });
-        if (event) {
-            res.json(event);
-        } else {
-            res.status(404).json({ message: 'Событие не найдено' });
-        }
-    } catch (err) {
-        console.error("Ошибка при получении события:", err);
-        res.status(500).json({ message: 'Ошибка сервера' });
+  try {
+    const { id } = req.params;
+    const event = await Event.findByPk(id, {
+      include: [{ model: User, as: 'creator', attributes: ['name', 'email'] }],
+    });
+    if (event) {
+      res.json(event);
+    } else {
+      res.status(404).json({ message: 'Событие не найдено' });
     }
+  } catch (err) {
+    console.error('Ошибка при получении события:', err);
+    res.status(500).json({ message: 'Ошибка сервера' });
+  }
 });
 
 /**
@@ -112,29 +112,34 @@ router.get('/events/:id', async (req, res) => {
  *       500:
  *         description: Ошибка сервера
  */
-router.put('/events/:id', async (req, res): Promise <any> => {
+
+router.put(
+  '/events/:id',
+  async (req: Request<{ id: string }>, res: Response) => {
     try {
-        const { id } = req.params;
-        const { title, description, date, location, createdby } = req.body;
+      const { id } = req.params;
+      const { title, description, date, location, createdby } = req.body;
 
-        const event = await Event.findByPk(id);
-        if (!event) {
-            return res.status(404).json({ message: 'Событие не найдено' });
-        }
+      const event = await Event.findByPk(id);
+      if (!event) {
+        res.status(404).json({ message: 'Событие не найдено' });
+        return;
+      }
 
-        if (title) event.title = title;
-        if (description) event.description = description;
-        if (date) event.date = date;
-        if (location) event.location = location;
-        if (createdby) event.createdby = createdby;
+      if (title) event.title = title;
+      if (description) event.description = description;
+      if (date) event.date = date;
+      if (location) event.location = location;
+      if (createdby) event.createdby = createdby;
 
-        await event.save();
-        res.json(event);
+      await event.save();
+      res.json(event);
     } catch (err) {
-        console.error("Ошибка при обновлении события:", err);
-        res.status(500).json({ message: 'Ошибка сервера' });
+      console.error('Ошибка при обновлении события:', err);
+      res.status(500).json({ message: 'Ошибка сервера' });
     }
-});
+  },
+);
 
 /**
  * @swagger
@@ -156,20 +161,24 @@ router.put('/events/:id', async (req, res): Promise <any> => {
  *       500:
  *         description: Ошибка сервера
  */
-router.delete('/events/:id', async (req, res) : Promise <any>=> {
+router.delete(
+  '/events/:id',
+  async (req: Request<{ id: string }>, res: Response) => {
     try {
-        const { id } = req.params;
-        const event = await Event.findByPk(id);
-        if (!event) {
-            return res.status(404).json({ message: 'Событие не найдено' });
-        }
+      const { id } = req.params;
+      const event = await Event.findByPk(id);
+      if (!event) {
+        res.status(404).json({ message: 'Событие не найдено' });
+        return;
+      }
 
-        await event.destroy();
-        res.status(204).send();
+      await event.destroy();
+      res.status(204).send();
     } catch (err) {
-        console.error("Ошибка при удалении события:", err);
-        res.status(500).json({ message: 'Ошибка сервера' });
+      console.error('Ошибка при удалении события:', err);
+      res.status(500).json({ message: 'Ошибка сервера' });
     }
-});
+  },
+);
 
 export default router;
