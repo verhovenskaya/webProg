@@ -1,12 +1,14 @@
+/*реализована JWT-аутентификация с помощью Passport.js    */                                                                                           /* eslint-disable */
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import passport from 'passport';
-import User from '../model/user';
-import BlacklistedToken from '../model/blackListToken';
+import User from '@models/user';
+import BlacklistedToken from '@models/blackListToken';
 import * as dotenv from 'dotenv';
 import { Request } from 'express';
 
 dotenv.config();
 
+// Объявляем расширение для Express User
 declare global {
   namespace Express {
     interface User extends InstanceType<typeof User> {}
@@ -15,7 +17,6 @@ declare global {
 
 interface JwtPayload {
   id: number;
-  [key: string]: unknown;
 }
 
 const options = {
@@ -48,21 +49,25 @@ passport.use(
     } catch (error) {
       return done(error, false);
     }
-  }),
+  })
 );
 
-// Правильная типизация для serializeUser
-passport.serializeUser((user: User, done) => {
+// Типизация для serializeUser 
+passport.serializeUser((user: Express.User, done: (err: Error | null, id?: number) => void) => {
   done(null, user.id);
 });
 
-// Правильная типизация для deserializeUser
-passport.deserializeUser(async (id: number, done) => {
+// Типизация для deserializeUser 
+passport.deserializeUser(async (id: number, done: (err: Error | null, user?: Express.User | null) => void) => {
   try {
     const user = await User.findByPk(id);
     done(null, user);
   } catch (err) {
-    done(err);
+    if (err instanceof Error) {
+      done(err);
+    } else {
+      done(new Error('Unknown error during deserialization'));
+    }
   }
 });
 

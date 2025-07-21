@@ -3,23 +3,28 @@
     "target": "es2016",
     "module": "commonjs",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
-
+    "checkJs": false,
     "strict": true,
     "skipLibCheck": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": "./src",
     "paths": {
-      "@api/*": ["./api/*"],
-      "@config/*": ["./config/*"],
-      "@models/*": ["./model/*"],
-      "@routes/*": ["./routes/*"],
-      "@controllers/*": ["./controllers/*"],
-      "@swaggers/*": ["./swaggers/*"],
-      "@middleware/*": ["middleware/*.ts"]
-    }
+      "@api/*": ["api/*"],
+      "@config/*": ["config/*"],
+      "@models/*": ["models/*"],
+      "@routes/*": ["routes/*"],
+      "@middleware/*": ["middleware/*"],
+      "@utils/*": ["utils/*"],
+      "@types/*": ["types/*"]
+    },
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

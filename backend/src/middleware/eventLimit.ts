@@ -1,9 +1,27 @@
 import { Request, Response, NextFunction } from 'express';
-import Event from '../model/event';
+import Event from '@models/event';
 import * as dotenv from 'dotenv';
 import { Op } from 'sequelize';
 
 dotenv.config();
+
+// Define your User interface
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Include other User model attributes as needed
+}
+
+// Extend the Express Request interface using module augmentation
+declare module 'express' {
+  interface Request {
+    user?: User;
+  }
+}
 
 const checkEventLimit = async (
   req: Request,

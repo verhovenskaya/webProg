@@ -1,7 +1,9 @@
 import express from 'express';
 const router = express.Router();
-import User from '../model/user';
+import User from '@models/user';
 import { Request, Response } from 'express';
+import authMiddleware from '@middleware/auth';
+import jwt, { JwtPayload, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
 
 /**
  * @swagger
@@ -29,8 +31,9 @@ router.get('/users', async (req: Request, res: Response): Promise<void> => {
   } catch (error: unknown) {
     if (error instanceof Error) {
       res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unknown error occurred' });
     }
-    res.status(500).json({ message: 'An unknown error occurred' });
   }
 });
 
@@ -65,8 +68,9 @@ router.get('/users/:id', async (req: Request, res: Response): Promise<void> => {
   } catch (error: unknown) {
     if (error instanceof Error) {
       res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unknown error occurred' });
     }
-    res.status(500).json({ message: 'An unknown error occurred' });
   }
 });
 
@@ -87,6 +91,8 @@ router.get('/users/:id', async (req: Request, res: Response): Promise<void> => {
  *                 type: string
  *               email:
  *                 type: string
+ *               password:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Пользователь создан
@@ -100,8 +106,9 @@ router.post('/users', async (req: Request, res: Response): Promise<void> => {
   } catch (error: unknown) {
     if (error instanceof Error) {
       res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unknown error occurred' });
     }
-    res.status(500).json({ message: 'An unknown error occurred' });
   }
 });
 
@@ -148,8 +155,9 @@ router.put('/users/:id', async (req: Request, res: Response): Promise<void> => {
   } catch (error: unknown) {
     if (error instanceof Error) {
       res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unknown error occurred' });
     }
-    res.status(500).json({ message: 'An unknown error occurred' });
   }
 });
 
@@ -188,10 +196,34 @@ router.delete(
     } catch (error: unknown) {
       if (error instanceof Error) {
         res.status(500).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: 'An unknown error occurred' });
       }
-      res.status(500).json({ message: 'An unknown error occurred' });
     }
   },
 );
 
+// userRoutes.ts
+router.get('/me', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user?.id) { // Use lowercase 'user'
+      res.status(401).json({ error: 'User not authenticated' });
+      return;
+    }
+
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'name', 'email']
+    });
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error in /me endpoint:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 export default router;

@@ -1,4 +1,4 @@
-import BlacklistedToken from '../model/blackListToken';
+import BlacklistedToken from '@models/blackListToken';
 import cron from 'node-cron';
 import { Op } from 'sequelize';
 

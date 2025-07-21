@@ -1,9 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
-import dbConfig from '../config/db';
-import User from './user';
-
-// Получаем экземпляр sequelize из dbConfig
-const sequelize = dbConfig.sequelize;
+import { sequelize } from '@config/db';
+import User from '@models/user';
 
 interface EventAttributes {
   id?: number;

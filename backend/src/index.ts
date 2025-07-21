@@ -1,19 +1,20 @@
+import 'module-alias/register';
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
 import passport from 'passport';
-import checkBlacklistedToken from './middleware/checkBlackListToken';
-import './config/passport';
-import { sequelize } from '../src/config/db';
+import checkBlackListToken from './middleware/checkBlackListToken';
+import '@config/passport';
+import { sequelize } from '@config/db';
 
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocs from './swagger';
 
-import eventRoutes from './routes/eventRoutes';
-import userRoutes from './routes/userRoutes';
-import authRoutes from './routes/authRoutes';
-import protectedRoutes from './routes/protectedRoutes';
+import eventRoutes from '@routes/eventRoutes';
+import userRoutes from '@routes/userRoutes';
+import authRoutes from '@routes/authRoutes';
+import protectedRoutes from '@routes/protectedRoutes';
 
 dotenv.config();
 
@@ -29,10 +30,20 @@ app.use(
 // Настройка Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+const corsOptions = {
+  origin: ['http://localhost:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(cors());
-app.use(checkBlacklistedToken);
+
+app.use(checkBlackListToken);
 app.use(passport.initialize());
+
+
 
 // Подключение маршрутов
 app.use('/api', eventRoutes);

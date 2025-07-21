@@ -1,9 +1,9 @@
 import { DataTypes, Model } from 'sequelize';
-import dbConfig from '../config/db';
+import { sequelize } from '@config/db';
 import bcrypt from 'bcryptjs';
 
 interface UserAttributes {
-  id?: number;
+  id: number;
   name: string;
   email: string;
   password: string;
@@ -18,7 +18,8 @@ interface UserCreationAttributes {
   createdat?: Date;
 }
 
-class User
+
+export class User
   extends Model<UserAttributes, UserCreationAttributes>
   implements UserAttributes
 {
@@ -64,7 +65,7 @@ User.init(
     },
   },
   {
-    sequelize: dbConfig.sequelize,
+    sequelize: sequelize,
     modelName: 'User',
     tableName: 'users',
     timestamps: false,

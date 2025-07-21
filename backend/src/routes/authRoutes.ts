@@ -1,8 +1,8 @@
 import { Request, Response, Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import BlacklistedToken from '../model/blackListToken';
-import User from '../model/user';
+import BlacklistedToken from '@models/blackListToken';
+import User from '@models/user';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -114,6 +114,7 @@ router.post(
       res.status(500).json({ message: 'Ошибка сервера' });
     }
   },
+  
 );
 
 /**

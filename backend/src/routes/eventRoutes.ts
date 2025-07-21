@@ -1,9 +1,23 @@
 import express from 'express';
 const router = express.Router();
-import Event from '../model/event';
-import User from '../model/user';
+import Event from '@models/event';
+import User from '@models/user';
 import { Request, Response } from 'express';
 
+import jwt from 'jsonwebtoken';
+
+const authenticateToken = (req: Request, res: Response, next: Function) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) return res.sendStatus(401);
+
+  jwt.verify(token, process.env.JWT_SECRET!, (err: any, user: any) => {
+    if (err) return res.sendStatus(403);
+    (req as any).user = user;
+    next();
+  });
+};
 /**
  * @swagger
  * tags:

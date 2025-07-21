@@ -1,8 +1,8 @@
 import { DataTypes } from 'sequelize';
-import sequelize from '../config/db';
+import { sequelize } from '@config/db';
 
-const BlacklistedToken = sequelize.sequelize.define(
-  'BlacklistedToken',
+const blackListToken = sequelize.define(
+  'blackListToken',
   {
     token: {
       type: DataTypes.STRING(512),
@@ -24,4 +24,4 @@ const BlacklistedToken = sequelize.sequelize.define(
   },
 );
 
-export default BlacklistedToken;
+export default blackListToken;

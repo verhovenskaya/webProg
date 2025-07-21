@@ -1,29 +1,35 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { User as AppUser } from '@models/user';
 
-export default (req: Request, res: Response, next: NextFunction): void => {
-  // Get token from header
-  const authHeader = req.headers['authorization'];
-  const token = authHeader?.split(' ')[1];
+declare global {
+  namespace Express {
+    interface User extends AppUser {}
+  }
+}
 
-  if (!token) {
+export const authMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const authHeader = req.headers.authorization || req.headers.Authorization as string;
+  
+  if (!authHeader?.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Access denied. No token provided.' });
     return;
   }
 
+  const token = authHeader.split(' ')[1];
+  
   try {
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-
-    // Attach user to request
-    req.user = {
-      id: decoded.id,
-      ...(decoded.email && { email: decoded.email }),
-      ...(decoded.name && { name: decoded.name }),
-    };
-
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: number };
+    req.user = { id: decoded.id, name: '', email: '', password: '' };
     next();
-  } catch {
-    res.status(400).json({ error: 'Invalid token' });
+  } catch (error) {
+    console.error('Token verification error:', error);
+    res.status(401).json({ error: 'Invalid token' });
   }
 };
+
+export default authMiddleware;
