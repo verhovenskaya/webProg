@@ -5,12 +5,20 @@
   padding: 20px;
 }
 
+.eventsHeader {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  grid-column: 1/-1;
+}
+
 .eventCard {
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   transition: transform 0.2s;
+  position: relative;
 
   &:hover {
     transform: translateY(-5px);
@@ -54,6 +62,49 @@
   margin-top: 10px;
 }
 
+.deleteButton {
+  display: none;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #e74c3c;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+
+.eventCard:hover .deleteButton {
+  display: block;
+}
+
+.deleteButton:hover {
+  color: #c0392b;
+}
+
+.editButton {
+  display: block;
+  margin: 24px auto 0 auto;
+  background: #fff;
+  color: #111;
+  border: 1.5px solid #111;
+  border-radius: 6px;
+  padding: 8px 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.editButton:hover {
+  background: #111;
+  color: #fff;
+}
+
 .loading, .empty, .error {
   padding: 20px;
   text-align: center;
@@ -62,4 +113,70 @@
 
 .error {
   color: #e74c3c;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+  padding: 32px 24px;
+  min-width: 340px;
+  max-width: 95vw;
+  position: relative;
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.saveButton {
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.saveButton:hover {
+  background: #fff;
+  color: #111;
+  border: 1.5px solid #111;
+}
+
+.cancelButton {
+  background: #fff;
+  color: #111;
+  border: 1.5px solid #111;
+  border-radius: 6px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.cancelButton:hover {
+  background: #111;
+  color: #fff;
 }

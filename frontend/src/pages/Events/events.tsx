@@ -12,7 +12,6 @@ const EventsPage: React.FC = () => {
 
   return (
     <div className={styles.eventsPage}>
-      <h1>Events</h1>
       <div className={styles.content}>
         <div className={styles.eventsList}>
           <Events key={refresh.toString()} />

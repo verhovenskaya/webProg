@@ -1,11 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { fetchEvents, type IEvent } from '../../api/events';
+import { fetchEvents, type IEvent, deleteEvent, updateEvent } from '../../api/events';
 import styles from './Events.module.scss';
+import AddEvent from '../AddEvent/AddEvent';
 
 const Events: React.FC = () => {
   const [events, setEvents] = useState<IEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<IEvent | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const handleEditClick = (event: IEvent) => {
+    setEditingEvent(event);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSave = async (updated: Partial<IEvent>) => {
+    if (!editingEvent) return;
+    try {
+      const updatedEvent = await updateEvent(editingEvent.id, updated);
+      setEvents((prev) => prev.map(ev => ev.id === editingEvent.id ? { ...ev, ...updatedEvent } : ev));
+      setIsEditModalOpen(false);
+      setEditingEvent(null);
+    } catch (err) {
+      alert('Ошибка при сохранении изменений');
+    }
+  };
+
+  const handleEditCancel = () => {
+    setIsEditModalOpen(false);
+    setEditingEvent(null);
+  };
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -42,9 +67,26 @@ const Events: React.FC = () => {
 
   return (
     <div className={styles.eventsContainer}>
-      <h1>Events</h1>
+      <h1 className={styles.eventsHeader}>Мероприятия</h1>
       {events.map((event) => (
         <div key={event.id} className={styles.eventCard}>
+          <button
+            className={styles.deleteButton}
+            title="Удалить мероприятие"
+            onClick={async (e) => {
+              e.stopPropagation();
+              if (window.confirm('Удалить мероприятие?')) {
+                try {
+                  await deleteEvent(event.id);
+                  setEvents((prev) => prev.filter((ev) => ev.id !== event.id));
+                } catch (err) {
+                  alert('Ошибка при удалении');
+                }
+              }
+            }}
+          >
+            ×
+          </button>
           <h3 className={styles.eventTitle}>{event.title}</h3>
           <p className={styles.eventDescription}>
             {event.description || 'No description provided'}
@@ -62,8 +104,83 @@ const Events: React.FC = () => {
               Organizer: {event.creator.name} ({event.creator.email})
             </div>
           )}
+          <button className={styles.editButton} title="Редактировать мероприятие" onClick={() => handleEditClick(event)}>
+            Редактировать
+          </button>
         </div>
       ))}
+      {isEditModalOpen && editingEvent && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h2>Редактировать мероприятие</h2>
+            <form
+              className={styles.editForm}
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.target as typeof e.target & {
+                  title: { value: string };
+                  description: { value: string };
+                  date: { value: string };
+                  location: { value: string };
+                };
+                await handleEditSave({
+                  title: form.title.value,
+                  description: form.description.value,
+                  date: new Date(form.date.value).toISOString(),
+                  location: form.location.value,
+                });
+              }}
+            >
+              <div className={styles.formGroup}>
+                <label htmlFor="edit-title">Название:</label>
+                <input
+                  id="edit-title"
+                  name="title"
+                  type="text"
+                  defaultValue={editingEvent.title}
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="edit-description">Описание:</label>
+                <textarea
+                  id="edit-description"
+                  name="description"
+                  defaultValue={editingEvent.description || ''}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="edit-date">Дата и время:</label>
+                <input
+                  id="edit-date"
+                  name="date"
+                  type="datetime-local"
+                  defaultValue={editingEvent.date.slice(0, 16)}
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="edit-location">Место проведения:</label>
+                <input
+                  id="edit-location"
+                  name="location"
+                  type="text"
+                  defaultValue={editingEvent.location}
+                  required
+                />
+              </div>
+              <div className={styles.modalActions}>
+                <button type="button" onClick={handleEditCancel} className={styles.cancelButton}>
+                  Отмена
+                </button>
+                <button type="submit" className={styles.saveButton}>
+                  Сохранить
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

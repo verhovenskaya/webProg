@@ -37,29 +37,34 @@ const AddEvent: React.FC<{ onEventAdded: () => void }> = ({ onEventAdded }) => {
 
   return (
     <form onSubmit={handleSubmit} className={styles.addEventForm}>
-      <h3>Add New Event</h3>
+      <h3 className={styles.formTitle}>Новое мероприятие</h3>
       <div className={styles.formGroup}>
-        <label>Title:</label>
+        <label htmlFor="title">Название:</label>
         <input
           type="text"
+          id="title"
           name="title"
+          placeholder="Введите название"
           value={formData.title}
           onChange={handleChange}
           required
         />
       </div>
       <div className={styles.formGroup}>
-        <label>Description:</label>
+        <label htmlFor="description">Описание:</label>
         <textarea
+          id="description"
           name="description"
+          placeholder="Краткое описание (необязательно)"
           value={formData.description}
           onChange={handleChange}
         />
       </div>
       <div className={styles.formGroup}>
-        <label>Date:</label>
+        <label htmlFor="date">Дата и время:</label>
         <input
           type="datetime-local"
+          id="date"
           name="date"
           value={formData.date}
           onChange={handleChange}
@@ -67,17 +72,19 @@ const AddEvent: React.FC<{ onEventAdded: () => void }> = ({ onEventAdded }) => {
         />
       </div>
       <div className={styles.formGroup}>
-        <label>Location:</label>
+        <label htmlFor="location">Место проведения:</label>
         <input
           type="text"
+          id="location"
           name="location"
+          placeholder="Где будет мероприятие?"
           value={formData.location}
           onChange={handleChange}
           required
         />
       </div>
       <button type="submit" className={styles.submitButton}>
-        Add Event
+        Создать
       </button>
     </form>
   );

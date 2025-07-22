@@ -9,7 +9,7 @@ body {
       text-align: center;
     
       h1 {
-        color: #34C5DB;
+        color: #000000;
         margin-bottom: 1rem;
       }
     
@@ -22,13 +22,13 @@ body {
     
     .homeLink {
       padding: 0.75rem 1.5rem;
-      background: #34C5DB;
+      background: #000000;
       color: white;
       border-radius: 4px;
       text-decoration: none;
       transition: background 0.3s;
     
       &:hover {
-        background: #29aab9;
+        background: #000000;
       }
     }

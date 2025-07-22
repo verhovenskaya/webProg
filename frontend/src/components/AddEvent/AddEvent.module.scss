@@ -1,0 +1,73 @@
+.addEventForm {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.formTitle {
+  color: #111;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  color: #222;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+input,
+textarea {
+  background: #fff;
+  border: 1px solid #222;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  color: #111;
+  transition: border 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+input:focus,
+textarea:focus {
+  border: 1.5px solid #000;
+  box-shadow: 0 0 0 2px #0001;
+}
+
+textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+
+.submitButton {
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.submitButton:hover {
+  background: #fff;
+  color: #111;
+  border: 1.5px solid #111;
+}

@@ -1,11 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../utils/useAuth';
+import { useNavigate } from 'react-router-dom';
 import styles from './login.module.scss';
 
 export const LoginPage = () => {
-  const { login, error, loading } = useAuth();
+  const { login, error, loading, isAuth } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuth) {
+      navigate('/events', { replace: true });
+    }
+  }, [isAuth, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +35,6 @@ export const LoginPage = () => {
               required
             />
           </div>
-          
           <div className={styles.formGroup}>
             <label htmlFor="password">Пароль</label>
             <input
@@ -38,9 +45,7 @@ export const LoginPage = () => {
               required
             />
           </div>
-
           {error && <div className={styles.error}>{error}</div>}
-
           <button 
             type="submit" 
             className={styles.submitButton}
@@ -49,6 +54,14 @@ export const LoginPage = () => {
             {loading ? 'Вход...' : 'Войти'}
           </button>
         </form>
+        <button
+          type="button"
+          className={styles.submitButton}
+          style={{ marginTop: 16 }}
+          onClick={() => navigate('/register')}
+        >
+          Зарегистрироваться
+        </button>
       </div>
     </div>
   );

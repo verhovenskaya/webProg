@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../utils/useAuth';
+import { useNavigate } from 'react-router-dom';
 import styles from './register.module.scss';
 
 export const RegisterPage = () => {
@@ -7,10 +8,14 @@ export const RegisterPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    register({ name, email, password });
+    try {
+      await register({ name, email, password });
+      navigate('/login', { replace: true });
+    } catch {}
   };
 
   return (
@@ -28,7 +33,6 @@ export const RegisterPage = () => {
               required
             />
           </div>
-
           <div className={styles.formGroup}>
             <label htmlFor="email">Email</label>
             <input
@@ -39,7 +43,6 @@ export const RegisterPage = () => {
               required
             />
           </div>
-          
           <div className={styles.formGroup}>
             <label htmlFor="password">Пароль</label>
             <input
@@ -50,9 +53,7 @@ export const RegisterPage = () => {
               required
             />
           </div>
-
           {error && <div className={styles.error}>{error}</div>}
-
           <button 
             type="submit" 
             className={styles.submitButton}
@@ -61,8 +62,17 @@ export const RegisterPage = () => {
             {loading ? 'Регистрация...' : 'Зарегистрироваться'}
           </button>
         </form>
+        <button
+          type="button"
+          className={styles.submitButton}
+          style={{ marginTop: 16 }}
+          onClick={() => navigate('/login')}
+        >
+          Уже есть аккаунт? Войти
+        </button>
       </div>
     </div>
   );
 };
+
 export default RegisterPage;
