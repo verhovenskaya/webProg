@@ -3,7 +3,11 @@ import { fetchEvents, type IEvent, deleteEvent, updateEvent } from '../../api/ev
 import styles from './Events.module.scss';
 import AddEvent from '../AddEvent/AddEvent';
 
-const Events: React.FC = () => {
+interface EventsProps {
+  events?: IEvent[];
+}
+
+const Events: React.FC<EventsProps> = ({ events: propsEvents }) => {
   const [events, setEvents] = useState<IEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,22 +37,24 @@ const Events: React.FC = () => {
   };
 
   useEffect(() => {
+    if (propsEvents) {
+      setLoading(false);
+      setError(null);
+      setEvents(propsEvents);
+      return;
+    }
     const loadEvents = async () => {
       try {
-        console.log('Loading events...');
         const data = await fetchEvents();
-        console.log('Loaded events:', data);
         setEvents(data);
       } catch (err) {
-        console.error('Error loading events:', err);
         setError(err instanceof Error ? err.message : 'Failed to load events');
       } finally {
         setLoading(false);
       }
     };
-
     loadEvents();
-  }, []);
+  }, [propsEvents]);
 
   if (loading) return <div className={styles.loading}>Loading events...</div>;
   if (error) return (
@@ -57,7 +63,6 @@ const Events: React.FC = () => {
       <button onClick={() => window.location.reload()}>Retry</button>
     </div>
   );
-  
   if (events.length === 0) return (
     <div className={styles.empty}>
       No events found

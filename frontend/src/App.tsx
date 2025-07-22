@@ -6,6 +6,7 @@ import EventsPage from './pages/Events/events';
 import NotFound from './pages/NotFound/notFound';
 import Layout from './components/Layout/Layout';
 import { ProfilePage } from "./pages/Profile/profile";
+import { YMaps } from '@pbe/react-yandex-maps';
 
 function AppRoutes() {
   const location = useLocation();
@@ -32,9 +33,11 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
-      <AppRoutes />
-    </Router>
+<YMaps>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </YMaps>
   );
 }
 

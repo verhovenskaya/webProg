@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createEvent } from '../../api/events';
 import styles from './AddEvent.module.scss';
+import LocationPickerMap from '../Events/LocationPickerMap';
 
 const AddEvent: React.FC<{ onEventAdded: () => void }> = ({ onEventAdded }) => {
   const [formData, setFormData] = useState({
@@ -72,7 +73,7 @@ const AddEvent: React.FC<{ onEventAdded: () => void }> = ({ onEventAdded }) => {
         />
       </div>
       <div className={styles.formGroup}>
-        <label htmlFor="location">Место проведения:</label>
+        <label htmlFor="location">Место проведения (координаты):</label>
         <input
           type="text"
           id="location"
@@ -81,6 +82,13 @@ const AddEvent: React.FC<{ onEventAdded: () => void }> = ({ onEventAdded }) => {
           value={formData.location}
           onChange={handleChange}
           required
+        />
+      </div>
+      <div className={styles.formGroup}>
+        <label>Выберите точку на карте:</label>
+        <LocationPickerMap
+          value={formData.location}
+          onChange={loc => setFormData(prev => ({ ...prev, location: loc }))}
         />
       </div>
       <button type="submit" className={styles.submitButton}>
