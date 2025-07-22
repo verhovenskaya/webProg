@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, register, logout } from '../api/auth';
+import { login, register, logout, getMe } from '../api/auth';
 import { getToken, removeToken, setToken } from './localStorageUtils';
 
 interface AuthUser {
@@ -9,84 +9,157 @@ interface AuthUser {
   email: string;
 }
 
+interface AuthState {
+  user: AuthUser | null;
+  loading: boolean;
+  error: string | null;
+  isAuth: boolean;
+}
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+interface RegisterData extends LoginCredentials {
+  name: string;
+}
+
 export const useAuth = () => {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [authState, setAuthState] = useState<AuthState>({
+    user: null,
+    loading: false,
+    error: null,
+    isAuth: false,
+  });
   const navigate = useNavigate();
 
-  const handleLogin = useCallback(async (credentials: { email: string; password: string }) => {
-    console.log('Login attempt with:', credentials);
+  // Проверка аутентификации при монтировании
+  useEffect(() => {
+    const token = getToken();
+    if (token && !authState.user) {
+      // Проверяем токен и получаем пользователя
+      getMe()
+        .then(user => {
+          setAuthState({
+            user,
+            loading: false,
+            error: null,
+            isAuth: true,
+          });
+        })
+        .catch(() => {
+          removeToken();
+          setAuthState({
+            user: null,
+            loading: false,
+            error: null,
+            isAuth: false,
+          });
+        });
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  const setLoading = (loading: boolean) => 
+    setAuthState(prev => ({ ...prev, loading }));
+
+  const setError = (error: string | null) => 
+    setAuthState(prev => ({ ...prev, error }));
+
+  const handleLogin = useCallback(async (credentials: LoginCredentials) => {
     setLoading(true);
     setError(null);
+    
     try {
       const response = await login(credentials);
-      console.log('Login response:', response);
-      setToken(response.token);
-      setUser(response.user);
-      navigate('/');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
-      throw err;
       
-    } finally {
-      setLoading(false);
+      if (!response.token || !response.user) {
+        throw new Error('Invalid response from server');
+      }
+
+      setToken(response.token);
+      setAuthState({
+        user: response.user,
+        loading: false,
+        error: null,
+        isAuth: true,
+      });
+      
+      navigate('/events');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
+      setAuthState(prev => ({ ...prev, loading: false }));
+      throw err;
     }
   }, [navigate]);
 
-  const handleRegister = useCallback(async (userData: { name: string; email: string; password: string }) => {
+  const handleRegister = useCallback(async (userData: RegisterData) => {
     setLoading(true);
     setError(null);
+    
     try {
       const response = await register(userData);
-      if (response.token && response.user) {
-        setToken(response.token);
-        setUser(response.user);
-        navigate('/');
-      } else {
-        navigate('/login');
+      
+      if (!response.token || !response.user) {
+        throw new Error('Registration failed - no token received');
       }
+
+      setToken(response.token);
+      setAuthState({
+        user: response.user,
+        loading: false,
+        error: null,
+        isAuth: true,
+      });
+      
+      navigate('/events');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      const errorMessage = err instanceof Error ? err.message : 'Registration failed';
+      setError(errorMessage);
+      setAuthState(prev => ({ ...prev, loading: false }));
       throw err;
-    } finally {
-      setLoading(false);
     }
   }, [navigate]);
 
   const handleLogout = useCallback(async () => {
     const token = getToken();
-    if (!token) {
-      removeToken();
-      setUser(null);
-      navigate('/login');
-      return;
-    }
-
+    
     try {
-      await logout(token);
-      removeToken();
-      setUser(null);
-      navigate('/login');
+      if (token) {
+        await logout();
+      }
     } catch (err) {
-      console.error('Logout error:', err);
-      // Even if logout API fails, clear local auth state
+      console.error('Logout API error:', err);
+      // Продолжаем даже если API logout не сработал
+    } finally {
       removeToken();
-      setUser(null);
+      setAuthState({
+        user: null,
+        loading: false,
+        error: null,
+        isAuth: false,
+      });
       navigate('/login');
     }
   }, [navigate]);
 
-  const isAuth = !!user;
+  const updateUser = useCallback((userData: Partial<AuthUser>) => {
+    if (authState.user) {
+      setAuthState(prev => ({
+        ...prev,
+        user: { ...prev.user!, ...userData }
+      }));
+    }
+  }, [authState.user]);
 
   return { 
-    isAuth, 
-    user, 
-    loading, 
-    error, 
-    setUser,
-    login: handleLogin, 
-    register: handleRegister, 
-    logout: handleLogout 
+    ...authState,
+    login: handleLogin,
+    register: handleRegister,
+    logout: handleLogout,
+    updateUser,
+    setError,
   };
 };
