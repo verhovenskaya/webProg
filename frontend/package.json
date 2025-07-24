@@ -12,11 +12,13 @@
   },
   "dependencies": {
     "@pbe/react-yandex-maps": "^1.2.5",
+    "@reduxjs/toolkit": "^2.8.2",
     "axios": "^1.9.0",
     "classnames": "^2.5.1",
     "jwt-decode": "^4.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.1",
     "react-yandex-maps": "^4.0.0"
   },
