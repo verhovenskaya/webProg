@@ -1,5 +1,4 @@
 import api from './index';
-//import type { IEvent, IEventCreate, IEventUpdate } from '../types/event.types';
 
 export interface IEvent {
   id: number;
@@ -14,11 +13,11 @@ export interface IEvent {
   };
 }
 
-export const fetchEvents = async (): Promise<IEvent[]> => {
+export const fetchEvents = async (userId?: number): Promise<IEvent[]> => {
   try {
-    console.log('Making request to events');
-    const response = await api.get<IEvent[]>('/events');
-    console.log('Response data:', response.data);
+    const params = userId ? { createdby: userId } : {};
+    const response = await api.get<IEvent[]>('/events', { params });
+    console.log('Events data:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching events:', error);

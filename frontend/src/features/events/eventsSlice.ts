@@ -1,14 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-interface Event {
-  id: string;
-  title: string;
-  // другие поля события
-}
+import { fetchEvents } from '../../api/events'; // Используем обновленную функцию
+import type { IEvent } from '../../types/event.types';
 
 interface EventsState {
-  events: Event[];
+  events: IEvent[];
   isLoading: boolean;
   isError: boolean;
   errorMessage: string | null;
@@ -21,11 +16,10 @@ const initialState: EventsState = {
   errorMessage: null,
 };
 
-export const fetchEvents = createAsyncThunk(
+export const fetchEventsData = createAsyncThunk(
   'events/fetchEvents',
-  async (_, thunkAPI) => {
-    const response = await axios.get('/api/events');
-    return response.data;
+  async (userId: number | undefined, thunkAPI) => {
+    return await fetchEvents(userId);
   }
 );
 
@@ -35,19 +29,19 @@ const eventsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchEvents.pending, (state) => {
+      .addCase(fetchEventsData.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
         state.errorMessage = null;
       })
-      .addCase(fetchEvents.fulfilled, (state, action) => {
+      .addCase(fetchEventsData.fulfilled, (state, action) => {
         state.events = action.payload;
         state.isLoading = false;
       })
-      .addCase(fetchEvents.rejected, (state, action) => {
+      .addCase(fetchEventsData.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.errorMessage = action.error.message || 'Ошибка загрузки событий';
+        state.errorMessage = action.error.message || 'Ошибка загрузки мероприятий';
       });
   },
 });

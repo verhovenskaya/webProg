@@ -3,9 +3,10 @@
   margin: 0 auto;
   padding: 20px;
 
-  h1 {
+  h2 {
     color: #2c3e50;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
   }
 }
 
@@ -16,20 +17,17 @@
 }
 
 .addEventSection {
-  // Takes 1/3 of the space
   background: #f8f9fa;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  height: fit-content;
 }
 
 @media (max-width: 768px) {
   .content {
     grid-template-columns: 1fr;
   }
-}
-.eventsContainer {
-  padding: 20px;
 }
 
 .userInfo {

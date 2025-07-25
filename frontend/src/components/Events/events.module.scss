@@ -1,4 +1,6 @@
-.eventsContainer {
+.eventsGrid{
+  background-color: #ffffff;
+  border-radius: 8px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
@@ -40,18 +42,30 @@
 
 .eventDetails {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   font-size: 0.9rem;
 }
 
 .eventDate {
   color: #2c3e50;
   font-weight: 500;
+  
+  &::before {
+    content: "Дата: ";
+    font-weight: bold;
+  }
 }
-
 .eventLocation {
-  color: #7f8c8d;
+  color: #000000;
+  font-weight: 500;
+  
+  &::before {
+    content: "Локация: ";
+    font-weight: bold;
+  }
 }
 
 .eventCreator {
@@ -63,7 +77,7 @@
 }
 
 .deleteButton {
-  display: none;
+  display: block;
   position: absolute;
   top: 10px;
   right: 10px;

@@ -30,7 +30,13 @@ const authenticateToken = (req: Request, res: Response, next: Function) => {
  * /api/events:
  *   get:
  *     tags: [Events]
- *     summary: Получить все мероприятия
+ *     summary: Получить все мероприятия или мероприятия конкретного пользователя
+ *     parameters:
+ *       - in: query
+ *         name: createdby
+ *         schema:
+ *           type: integer
+ *         description: ID пользователя для фильтрации мероприятий
  *     responses:
  *       200:
  *         description: Успешный запрос
@@ -39,16 +45,21 @@ const authenticateToken = (req: Request, res: Response, next: Function) => {
  */
 router.get('/events', async (req, res) => {
   try {
+    const { createdby } = req.query;
+    
+    const whereClause = createdby ? { createdby: Number(createdby) } : {};
+    
     const events = await Event.findAll({
+      where: whereClause,
       include: [{ model: User, as: 'creator', attributes: ['name', 'email'] }],
     });
+    
     res.json(events);
   } catch (err) {
     console.error('Ошибка при получении событий:', err);
     res.status(500).json({ message: 'Ошибка сервера' });
   }
 });
-
 /**
  * @swagger
  * /api/events/{id}:

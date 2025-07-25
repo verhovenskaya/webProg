@@ -7,7 +7,7 @@ interface EventsMapProps {
 }
 
 const EventsMap: React.FC<EventsMapProps> = ({ events }) => {
-  const defaultCenter = events.length
+  const defaultCenter = events.length > 0 && events[0].location
     ? events[0].location.split(',').map(Number)
     : [55.75, 37.57];
 

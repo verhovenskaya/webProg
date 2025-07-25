@@ -2,15 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Map, Placemark } from '@pbe/react-yandex-maps';
 
 interface LocationPickerMapProps {
-  value?: string; // "55.684758, 37.738521"
+  value?: string;
   onChange: (coords: string) => void;
 }
 
 const LocationPickerMap: React.FC<LocationPickerMapProps> = ({ value, onChange }) => {
-  const initialCoords = value && value.split(',').length === 2
-    ? value.split(',').map(Number)
-    : [55.75, 37.57];
-  const [coords, setCoords] = useState<[number, number]>(initialCoords as [number, number]);
+  const [coords, setCoords] = useState<[number, number]>([55.75, 37.57]);
 
   useEffect(() => {
     if (value && value.split(',').length === 2) {

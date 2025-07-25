@@ -5,7 +5,7 @@ import Register from "./pages/Register/register";
 import EventsPage from './pages/Events/events';
 import NotFound from './pages/NotFound/notFound';
 import Layout from './components/Layout/Layout';
-import { ProfilePage } from "./pages/Profile/profile";
+//import  ProfilePage  from "./pages/Profile/profile";
 import { YMaps } from '@pbe/react-yandex-maps';
 
 function AppRoutes() {
@@ -24,7 +24,6 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/events" element={<EventsPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>
@@ -40,5 +39,6 @@ function App() {
     </YMaps>
   );
 }
+
 
 export default App;
