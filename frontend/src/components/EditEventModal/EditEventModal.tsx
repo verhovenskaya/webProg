@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import type {IEvent} from '../../types/event.types';
+import type { IEvent } from '../../types/event.types';
 import LocationPickerMap from '../Events/LocationPickerMap';
 import styles from './EditEventModal.module.scss';
-
-
 
 interface EditEventModalProps {
   event: IEvent;
@@ -13,51 +11,70 @@ interface EditEventModalProps {
 
 const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSave, onClose }) => {
   const [formData, setFormData] = useState<IEvent>({ ...event });
-  const [dateError, setDateError] = useState('');
+  const [errors, setErrors] = useState({
+    title: '',
+    description: '',
+    date: '',
+    location: ''
+  });
 
   useEffect(() => {
     setFormData({ ...event });
   }, [event]);
 
-  const getCurrentDatetime = (): string => {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    return now.toISOString().slice(0, 16);
-  };
-
-  const validateDate = (dateString: string): boolean => {
-    const selectedDate = new Date(dateString);
-    const now = new Date();
-    return selectedDate >= now;
+  const validateField = (name: string, value: string) => {
+    switch (name) {
+      case 'title':
+        if (!value.trim()) return 'Название обязательно';
+        if (value.length > 100) return 'Не более 100 символов';
+        return '';
+      case 'description':
+        if (value.length > 500) return 'Не более 500 символов';
+        return '';
+      case 'date':
+        if (!value) return 'Дата обязательна';
+        if (new Date(value) < new Date()) return 'Дата не может быть в прошлом';
+        return '';
+      case 'location':
+        if (!value.trim()) return 'Локация обязательна';
+        return '';
+      default:
+        return '';
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
-    if (name === 'date') {
-      if (!validateDate(value)) {
-        setDateError('Дата мероприятия не может быть раньше текущей');
-      } else {
-        setDateError('');
-      }
-    }
-    
     setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      title: validateField('title', formData.title),
+      description: validateField('description', formData.description || ''),
+      date: validateField('date', formData.date),
+      location: validateField('location', formData.location)
+    };
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(error => error);
   };
 
   const handleLocationChange = (location: string) => {
     setFormData(prev => ({ ...prev, location }));
+    setErrors(prev => ({ ...prev, location: validateField('location', location) }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateDate(formData.date)) {
-      setDateError('Пожалуйста, выберите корректную дату');
-      return;
-    }
-    
+    if (!validateForm()) return;
     onSave(formData);
+  };
+
+  const getCurrentDatetime = (): string => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
   };
 
   return (
@@ -73,8 +90,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSave, onClose 
               name="title"
               value={formData.title}
               onChange={handleChange}
+              maxLength={100}
               required
             />
+            {errors.title && <span className={styles.error}>{errors.title}</span>}
           </div>
           
           <div className={styles.formGroup}>
@@ -83,8 +102,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSave, onClose 
               name="description"
               value={formData.description || ''}
               onChange={handleChange}
+              maxLength={500}
               rows={3}
             />
+            {errors.description && <span className={styles.error}>{errors.description}</span>}
           </div>
           
           <div className={styles.formGroup}>
@@ -97,7 +118,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSave, onClose 
               min={getCurrentDatetime()}
               required
             />
-            {dateError && <span className={styles.error}>{dateError}</span>}
+            {errors.date && <span className={styles.error}>{errors.date}</span>}
           </div>
           
           <div className={styles.formGroup}>
@@ -109,6 +130,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSave, onClose 
               onChange={handleChange}
               required
             />
+            {errors.location && <span className={styles.error}>{errors.location}</span>}
             <div className={styles.mapContainer}>
               <LocationPickerMap
                 value={formData.location}
@@ -117,11 +139,11 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onSave, onClose 
             </div>
           </div>
           
-         <div className={styles.formActions}>
+          <div className={styles.formActions}>
             <button 
               type="submit" 
               className={styles.saveButton}
-              disabled={!!dateError}
+              disabled={Object.values(errors).some(error => error)}
             >
               Сохранить изменения
             </button>
