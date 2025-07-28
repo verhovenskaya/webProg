@@ -1,19 +1,22 @@
-import express from 'express';
-const router = express.Router();
+import express, { Request, Response, Router, NextFunction } from 'express';
+const router: Router = express.Router();
 import passport from 'passport';
 import Event from '@models/event';
 import User from '@models/user';
 import checkEventLimit from '@middleware/eventLimit';
-import { Request, Response } from 'express';
 
 router.get(
   '/me',
   passport.authenticate('jwt', { session: false }),
-  async (req: Request, res: Response): Promise<void> => {
+  (async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req.user as { id: number }).id;
-      const user = await User.findByPk(userId, {
-        attributes: ['id', 'name', 'email', 'createdat'],
+      if (!req.user || !req.user.id) {
+        res.status(401).json({ message: 'Не авторизован' });
+        return;
+      }
+
+      const user = await User.findByPk(req.user.id, {
+        attributes: ['id', 'firstName', 'lastName', 'email', 'createdat'],
       });
 
       if (!user) {
@@ -21,62 +24,31 @@ router.get(
         return;
       }
 
-      res.json({
+      res.status(200).json({
         id: user.id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         createdat: user.createdat,
       });
-    } catch (err) {
-      console.error('Ошибка получения данных пользователя:', err);
+    } catch (error) {
+      console.error('Ошибка получения данных пользователя:', error);
       res.status(500).json({ message: 'Ошибка сервера' });
     }
-  },
+  }) as express.RequestHandler
 );
 
-/**
- * @swagger
- * /api/events:
- *   post:
- *     security:
- *       - bearerAuth: []
- *     tags: [Events]
- *     summary: Создать мероприятие (требуется авторизация)
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - title
- *               - date
- *             properties:
- *               title:
- *                 type: string
- *               description:
- *                 type: string
- *               date:
- *                 type: string
- *                 format: date-time
- *               location:
- *                 type: string
- *     responses:
- *       201:
- *         description: Мероприятие создано
- *       401:
- *         description: Не авторизован
- *       400:
- *         description: Неверные данные
- *       500:
- *         description: Ошибка сервера
- */
 router.post(
   '/events',
   passport.authenticate('jwt', { session: false }),
   checkEventLimit,
-  async (req: Request, res: Response): Promise<void> => {
+  (async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (!req.user || !req.user.id) {
+        res.status(401).json({ message: 'Не авторизован' });
+        return;
+      }
+
       const { title, description, date, location } = req.body;
 
       if (!title || !date) {
@@ -89,15 +61,15 @@ router.post(
         description,
         date,
         location,
-        createdby: (req.user as { id: number }).id,
+        createdby: req.user.id,
       });
 
       res.status(201).json(event);
-    } catch (err) {
-      console.error('Ошибка создания события:', err);
+    } catch (error) {
+      console.error('Ошибка создания события:', error);
       res.status(500).json({ message: 'Ошибка сервера' });
     }
-  },
+  }) as express.RequestHandler
 );
 
 export default router;

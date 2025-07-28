@@ -2,8 +2,6 @@ import express from 'express';
 const router = express.Router();
 import User from '@models/user';
 import { Request, Response } from 'express';
-import authMiddleware from '@middleware/auth';
-import jwt, { JwtPayload, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
 
 /**
  * @swagger
@@ -26,14 +24,17 @@ import jwt, { JwtPayload, TokenExpiredError, JsonWebTokenError } from 'jsonwebto
  */
 router.get('/users', async (req: Request, res: Response): Promise<void> => {
   try {
-    const users = await User.findAll();
-    res.json(users);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
+    const users = await User.findAll({
+      attributes: ['id', 'firstName', 'lastName', 'email', 'createdat'],
+      raw: true
+    });
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Ошибка:', error);
+    res.status(500).json({ 
+      message: 'Ошибка сервера',
+      error: error instanceof Error ? error.message : String(error)
+    });
   }
 });
 
@@ -59,18 +60,25 @@ router.get('/users', async (req: Request, res: Response): Promise<void> => {
  */
 router.get('/users/:id', async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await User.findByPk(req.params.id);
-    if (user) {
-      res.json(user);
-    } else {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      res.status(400).json({ message: 'ID должен быть числом' });
+      return;
+    }
+
+    const user = await User.findByPk(id);
+    if (!user) {
       res.status(404).json({ message: 'Пользователь не найден' });
+      return;
     }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Ошибка при получении пользователя:', error);
+    res.status(500).json({ 
+      message: 'Ошибка сервера',
+      error: error instanceof Error ? error.message : String(error)
+    });
   }
 });
 
@@ -86,29 +94,59 @@ router.get('/users/:id', async (req: Request, res: Response): Promise<void> => {
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - firstName
+ *               - lastName
+ *               - email
+ *               - password
  *             properties:
- *               name:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               middleName:
  *                 type: string
  *               email:
  *                 type: string
  *               password:
  *                 type: string
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
+ *               birthDate:
+ *                 type: string
+ *                 format: date
  *     responses:
  *       201:
  *         description: Пользователь создан
+ *       400:
+ *         description: Неверные данные
  *       500:
  *         description: Ошибка сервера
  */
-router.post('/users', async (req: Request, res: Response): Promise<void> => {
+router.post('/users/', async (req: Request, res: Response): Promise<void> => {
   try {
+    const { firstName, lastName, email, password } = req.body;
+    
+    if (!firstName || !lastName || !email || !password) {
+      res.status(400).json({ message: 'Все обязательные поля должны быть заполнены' });
+      return;
+    }
+
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      res.status(400).json({ message: 'Пользователь с таким email уже существует' });
+      return;
+    }
+
     const user = await User.create(req.body);
     res.status(201).json(user);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
+  } catch (error) {
+    console.error('Ошибка при создании пользователя:', error);
+    res.status(500).json({ 
+      message: 'Ошибка сервера',
+      error: error instanceof Error ? error.message : String(error)
+    });
   }
 });
 
@@ -131,13 +169,25 @@ router.post('/users', async (req: Request, res: Response): Promise<void> => {
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               middleName:
  *                 type: string
  *               email:
  *                 type: string
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
+ *               birthDate:
+ *                 type: string
+ *                 format: date
  *     responses:
  *       200:
  *         description: Пользователь обновлен
+ *       400:
+ *         description: Неверные данные
  *       404:
  *         description: Пользователь не найден
  *       500:
@@ -145,19 +195,34 @@ router.post('/users', async (req: Request, res: Response): Promise<void> => {
  */
 router.put('/users/:id', async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await User.findByPk(req.params.id);
-    if (user) {
-      await user.update(req.body);
-      res.json(user);
-    } else {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      res.status(400).json({ message: 'ID должен быть числом' });
+      return;
+    }
+
+    const user = await User.findByPk(id);
+    if (!user) {
       res.status(404).json({ message: 'Пользователь не найден' });
+      return;
     }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'An unknown error occurred' });
+
+    if (req.body.email) {
+      const existingUser = await User.findOne({ where: { email: req.body.email } });
+      if (existingUser && existingUser.id !== id) {
+        res.status(400).json({ message: 'Пользователь с таким email уже существует' });
+        return;
+      }
     }
+
+    await user.update(req.body);
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Ошибка при обновлении пользователя:', error);
+    res.status(500).json({ 
+      message: 'Ошибка сервера',
+      error: error instanceof Error ? error.message : String(error)
+    });
   }
 });
 
@@ -181,49 +246,29 @@ router.put('/users/:id', async (req: Request, res: Response): Promise<void> => {
  *       500:
  *         description: Ошибка сервера
  */
-
-router.delete(
-  '/users/:id',
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const user = await User.findByPk(req.params.id);
-      if (user) {
-        await user.destroy();
-        res.status(204).send();
-      } else {
-        res.status(404).json({ message: 'Пользователь не найден' });
-      }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(500).json({ message: error.message });
-      } else {
-        res.status(500).json({ message: 'An unknown error occurred' });
-      }
-    }
-  },
-);
-
-// userRoutes.ts
-router.get('/me', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+router.delete('/users/:id', async (req: Request, res: Response): Promise<void> => {
   try {
-    if (!req.user?.id) { // Use lowercase 'user'
-      res.status(401).json({ error: 'User not authenticated' });
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      res.status(400).json({ message: 'ID должен быть числом' });
       return;
     }
 
-    const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'name', 'email']
-    });
-
+    const user = await User.findByPk(id);
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'Пользователь не найден' });
       return;
     }
 
-    res.json(user);
+    await user.destroy();
+    res.status(204).send();
   } catch (error) {
-    console.error('Error in /me endpoint:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Ошибка при удалении пользователя:', error);
+    res.status(500).json({ 
+      message: 'Ошибка сервера',
+      error: error instanceof Error ? error.message : String(error)
+    });
   }
 });
+
 export default router;

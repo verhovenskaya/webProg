@@ -51,7 +51,11 @@ router.get('/events', async (req, res) => {
     
     const events = await Event.findAll({
       where: whereClause,
-      include: [{ model: User, as: 'creator', attributes: ['name', 'email'] }],
+      include: [{
+        model: User,
+        as: 'creator',
+        attributes: ['firstName', 'lastName', 'email'] // Исправлено здесь
+      }],
     });
     
     res.json(events);
@@ -138,33 +142,32 @@ router.get('/events/:id', async (req, res) => {
  *         description: Ошибка сервера
  */
 
-router.put(
-  '/events/:id',
-  async (req: Request<{ id: string }>, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { title, description, date, location, createdby } = req.body;
+router.put('/:id', (async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { title, description, date, location, createdby } = req.body;
 
-      const event = await Event.findByPk(id);
-      if (!event) {
-        res.status(404).json({ message: 'Событие не найдено' });
-        return;
-      }
-
-      if (title) event.title = title;
-      if (description) event.description = description;
-      if (date) event.date = date;
-      if (location) event.location = location;
-      if (createdby) event.createdby = createdby;
-
-      await event.save();
-      res.json(event);
-    } catch (err) {
-      console.error('Ошибка при обновлении события:', err);
-      res.status(500).json({ message: 'Ошибка сервера' });
+    const event = await Event.findByPk(id);
+    if (!event) {
+      res.status(404).json({ message: 'Событие не найдено' });
+      return undefined as unknown as void;
     }
-  },
-);
+
+    if (title) event.title = title;
+    if (description) event.description = description;
+    if (date) event.date = date;
+    if (location) event.location = location;
+    if (createdby) event.createdby = createdby;
+
+    await event.save();
+    res.status(200).json(event);
+    return undefined as unknown as void;
+  } catch (error) {
+    console.error('Ошибка при обновлении события:', error);
+    res.status(500).json({ message: 'Ошибка сервера' });
+    return undefined as unknown as void;
+  }
+}) as express.RequestHandler);
 
 /**
  * @swagger
@@ -186,24 +189,23 @@ router.put(
  *       500:
  *         description: Ошибка сервера
  */
-router.delete(
-  '/events/:id',
-  async (req: Request<{ id: string }>, res: Response) => {
-    try {
-      const { id } = req.params;
-      const event = await Event.findByPk(id);
-      if (!event) {
-        res.status(404).json({ message: 'Событие не найдено' });
-        return;
-      }
-
-      await event.destroy();
-      res.status(204).send();
-    } catch (err) {
-      console.error('Ошибка при удалении события:', err);
-      res.status(500).json({ message: 'Ошибка сервера' });
+router.delete('/:id', (async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const event = await Event.findByPk(id);
+    if (!event) {
+      res.status(404).json({ message: 'Событие не найдено' });
+      return undefined as unknown as void;
     }
-  },
-);
+
+    await event.destroy();
+    res.status(204).send();
+    return undefined as unknown as void;
+  } catch (error) {
+    console.error('Ошибка при удалении события:', error);
+    res.status(500).json({ message: 'Ошибка сервера' });
+    return undefined as unknown as void;
+  }
+}) as express.RequestHandler);
 
 export default router;

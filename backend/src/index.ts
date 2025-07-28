@@ -39,9 +39,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-
-app.use(checkBlackListToken);
 app.use(passport.initialize());
+app.use(checkBlackListToken);
+
 
 
 

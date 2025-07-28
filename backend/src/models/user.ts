@@ -4,29 +4,35 @@ import bcrypt from 'bcryptjs';
 
 interface UserAttributes {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
+  middleName?: string;
   email: string;
   password: string;
+  gender?: 'male' | 'female' | 'other';
+  birthDate?: Date;
   createdat?: Date;
 }
 
-// Instead of extending Omit, explicitly define the creation attributes
 interface UserCreationAttributes {
-  name: string;
+  firstName: string;
+  lastName: string;
+  middleName?: string;
   email: string;
   password: string;
-  createdat?: Date;
+  gender?: 'male' | 'female' | 'other';
+  birthDate?: Date;
 }
 
-
-export class User
-  extends Model<UserAttributes, UserCreationAttributes>
-  implements UserAttributes
-{
+export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   declare id: number;
-  declare name: string;
+  declare firstName: string;
+  declare lastName: string;
+  declare middleName?: string;
   declare email: string;
   declare password: string;
+  declare gender?: 'male' | 'female' | 'other';
+  declare birthDate?: Date;
   declare createdat: Date;
 
   async verifyPassword(password: string): Promise<boolean> {
@@ -34,7 +40,6 @@ export class User
   }
 }
 
-// Rest of your User.init configuration remains the same...
 User.init(
   {
     id: {
@@ -42,21 +47,54 @@ User.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
-      type: DataTypes.STRING(100),
+    firstName: {
+      type: DataTypes.STRING(50),
       allowNull: false,
+      validate: {
+        notEmpty: true,
+        len: [2, 50],
+      },
+    },
+    lastName: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+        len: [2, 50],
+      },
+    },
+    middleName: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      validate: {
+        len: [0, 50],
+      },
     },
     email: {
       type: DataTypes.STRING(255),
       allowNull: false,
       unique: true,
+      validate: {
+        isEmail: true,
+      },
     },
     password: {
       type: DataTypes.STRING(255),
       allowNull: false,
-      set(value: string) {
-        // Хеширование пароля будет в хуках
-        this.setDataValue('password', value);
+      validate: {
+        len: [6, 255],
+      },
+    },
+    gender: {
+      type: DataTypes.ENUM('male', 'female', 'other'),
+      allowNull: true,
+    },
+    birthDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      validate: {
+        isDate: true,
+        isBefore: new Date().toISOString(),
       },
     },
     createdat: {

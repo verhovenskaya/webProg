@@ -22,24 +22,24 @@ const Header: React.FC = () => {
             Страница не найдена
           </Link>
 
-          {isAuth ? (
-            <div className={styles.profileDropdown}>
-              <button className={styles.profileButton}>
-                Профиль
-              </button>
-              <div className={styles.dropdownContent}>
-                <div className={styles.profileInfo}>
-                  <p>Имя: {user?.name}</p>
-                  <p>Email: {user?.email}</p>
-                </div>
-                <button 
-                  onClick={logout} 
-                  className={styles.logoutButton}
-                >
-                  Выйти
-                </button>
-              </div>
-            </div>
+         {isAuth ? (
+  <div className={styles.profileDropdown}>
+    <Link to="/profile" className={styles.profileButton}>
+      Профиль
+    </Link>
+    <div className={styles.dropdownContent}>
+      <div className={styles.profileInfo}>
+        <p>Имя: {user?.name}</p>
+        <p>Email: {user?.email}</p>
+      </div>
+      <button 
+        onClick={logout} 
+        className={styles.logoutButton}
+      >
+        Выйти
+      </button>
+    </div>
+  </div>
           ) : (
             <div className={styles.authLinks}>
               <Link to="/login" className={styles.navLink}>

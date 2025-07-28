@@ -5,24 +5,6 @@ import { Op } from 'sequelize';
 
 dotenv.config();
 
-// Define your User interface
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  password: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  // Include other User model attributes as needed
-}
-
-// Extend the Express Request interface using module augmentation
-declare module 'express' {
-  interface Request {
-    user?: User;
-  }
-}
-
 const checkEventLimit = async (
   req: Request,
   res: Response,
@@ -30,7 +12,6 @@ const checkEventLimit = async (
 ): Promise<void> => {
   console.log('Middleware checkEventLimit вызван');
 
-  // Get user ID from req.user
   if (!req.user?.id) {
     res.status(401).json({ message: 'Пользователь не аутентифицирован' });
     return;

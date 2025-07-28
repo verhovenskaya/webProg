@@ -1,15 +1,14 @@
-// types/express.d.ts
-import { User } from '@models/user';
-
 declare global {
   namespace Express {
+    interface User {
+      id: number;
+      email: string;
+      firstName: string;
+      lastName: string;
+    }
+
     interface Request {
-      user?: {
-        id: number;
-        email: string;
-        name: string;
-        password: string;
-      };
+      user?: User;
     }
   }
 }
